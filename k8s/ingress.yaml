@@ -6,10 +6,12 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Content-Type: application/json; charset=UTF-8";
 spec:
   ingressClassName: nginx
   rules:
-   - http:
+  - http:
       paths:
       - path: /
         pathType: Prefix
