@@ -41,7 +41,7 @@ async def webhook(request: Request):
     repo_path = "/home/skitterbot/MLOPS/backend"
     logging.info("Running git pull...")
     run_command(["git", "-C", repo_path, "pull"])
-
+    run_command(["docker", "login", "ghcr.io", "-u", "tmteameod", "--password-stdin"], input="GITHUB_PAT")
     # Docker 이미지 빌드 및 Push
     image_tag = f"{DOCKER_REPO}:{int(time.time())}"  # Timestamp 기반 태그
     logging.info(f"Building Docker image: {image_tag}...")
@@ -53,7 +53,7 @@ async def webhook(request: Request):
     # 쿠버네티스 배포 업데이트
     logging.info("Updating Kubernetes deployment...")
     run_command(["kubectl", "set", "image", "deployment/fastapi-deployment",
-                 f"fastapi-container={image_tag}"])
+                 f"fastapi={image_tag}"])
 
     # 롤아웃 진행 확인
     logging.info("Checking rollout status...")
