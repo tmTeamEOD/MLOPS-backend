@@ -5,7 +5,7 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return {"message": "Hello, 지미카터!"}
+    return {"message": "Hello, 지미카터피슝!"}
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():

@@ -9,6 +9,7 @@ GITHUB_SECRET = "test"
 
 app = FastAPI()
 
+
 # GitHub Webhook을 받을 엔드포인트
 @app.post("/webhook")
 async def webhook(request: Request):
@@ -22,7 +23,30 @@ async def webhook(request: Request):
 
     # Git Pull & 배포 실행
     repo_path = "/home/skitterbot/MLOPS/backend"
-    subprocess.run(["git", "-C", repo_path, "pull"], check=True)
-    subprocess.run(["kubectl", "apply", "-f", f"{repo_path}/k8s"], check=True)
 
-    return {"status": "Deployment updated"}
+    try:
+        # Git Pull 실행
+        git_pull_result = subprocess.run(["git", "-C", repo_path, "pull"], capture_output=True, text=True, check=True)
+
+        # 쿠버네티스 배포 적용
+        kubectl_apply_result = subprocess.run(["kubectl", "apply", "-f", f"{repo_path}/k8s"], capture_output=True,
+                                              text=True, check=True)
+
+        # FastAPI Deployment 강제 재배포
+        rollout_result = subprocess.run(["kubectl", "rollout", "restart", "deployment/fastapi-deployment"],
+                                        capture_output=True, text=True, check=True)
+
+        return {
+            "status": "Deployment updated",
+            "git_pull": git_pull_result.stdout,
+            "kubectl_apply": kubectl_apply_result.stdout,
+            "rollout_restart": rollout_result.stdout
+        }
+
+    except subprocess.CalledProcessError as e:
+        return {
+            "status": "Error executing command",
+            "command": e.cmd,
+            "output": e.output,
+            "stderr": e.stderr
+        }
