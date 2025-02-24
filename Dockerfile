@@ -1,13 +1,15 @@
-FROM python:3.12-slim
+# 베이스 이미지
+FROM python:3.9
 
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# 패키지 설치
-COPY requirements.txt .
+# 의존성 사전 설치 (캐싱 최적화)
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 애플리케이션 복사
-COPY . .
+# 소스 코드 추가
+COPY . /app
 
-# Uvicorn을 사용해 앱 실행 (포트 80번 사용)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+# FastAPI 실행
+CMD ["uvicorn", "webhook:app", "--host", "0.0.0.0", "--port", "8000"]

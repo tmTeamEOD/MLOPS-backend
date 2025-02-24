@@ -4,22 +4,25 @@ import hmac
 import hashlib
 import os
 import logging
+import time
 
 # GitHub Webhook Secret 설정
 GITHUB_SECRET = "test"
+
+# Docker 이미지 및 컨테이너 레지스트리 설정
+DOCKER_REPO = "ghcr.io/tmteameod/smhrd_mlops"
 
 app = FastAPI()
 
 # 로그 설정
 logging.basicConfig(level=logging.INFO)
 
-
 def run_command(command):
+    """명령어 실행 함수"""
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
         logging.error(f"Error executing {command}: {result.stderr}")
     return result.stdout.strip()
-
 
 @app.post("/webhook")
 async def webhook(request: Request):
@@ -34,16 +37,26 @@ async def webhook(request: Request):
         logging.warning("Invalid signature detected")
         return {"status": "Invalid signature"}
 
-    # Git Pull & 배포 실행
+    # Git Pull 실행
     repo_path = "/home/skitterbot/MLOPS/backend"
-
     logging.info("Running git pull...")
     run_command(["git", "-C", repo_path, "pull"])
 
-    logging.info("Applying Kubernetes configurations...")
-    run_command(["kubectl", "apply", "-f", f"{repo_path}/k8s"])
+    # Docker 이미지 빌드 및 Push
+    image_tag = f"{DOCKER_REPO}:{int(time.time())}"  # Timestamp 기반 태그
+    logging.info(f"Building Docker image: {image_tag}...")
+    run_command(["docker", "build", "-t", image_tag, repo_path])
 
-    logging.info("Restarting deployment...")
-    run_command(["kubectl", "rollout", "restart", "deployment/fastapi-deployment"])
+    logging.info(f"Pushing Docker image: {image_tag}...")
+    run_command(["docker", "push", image_tag])
 
-    return {"status": "Deployment updated"}
+    # 쿠버네티스 배포 업데이트
+    logging.info("Updating Kubernetes deployment...")
+    run_command(["kubectl", "set", "image", "deployment/fastapi-deployment",
+                 f"fastapi-container={image_tag}"])
+
+    # 롤아웃 진행 확인
+    logging.info("Checking rollout status...")
+    rollout_status = run_command(["kubectl", "rollout", "status", "deployment/fastapi-deployment"])
+
+    return {"status": "Deployment updated", "rollout_status": rollout_status}

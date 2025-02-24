@@ -1,10 +1,9 @@
-# fastapi-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  fastapi-deployment
+  name: fastapi-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: fastapi
@@ -14,7 +13,7 @@ spec:
         app: fastapi
     spec:
       containers:
-      - name: fastapi
-        image: ghcr.io/tmteameod/smhrd_mlops:tag  # 본인의 이미지로 변경
-        ports:
-        - containerPort: 80
+        - name: fastapi-container
+          image: ghcr.io/tmteameod/smhrd_mlops:latest  # 웹훅 실행 시마다 새로운 태그 적용됨
+          ports:
+            - containerPort: 80
