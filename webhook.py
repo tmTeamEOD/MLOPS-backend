@@ -21,7 +21,7 @@ async def webhook(request: Request):
         return {"status": "Invalid signature"}
 
     # Git Pull & 배포 실행
-    repo_path = "/home/skitterbot/MLOPS/Backend"
+    repo_path = "/home/skitterbot/MLOPS/backend"
     subprocess.run(["git", "-C", repo_path, "pull"], check=True)
     subprocess.run(["kubectl", "apply", "-f", f"{repo_path}/k8s"], check=True)
 
