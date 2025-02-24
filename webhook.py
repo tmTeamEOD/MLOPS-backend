@@ -60,3 +60,6 @@ async def webhook(request: Request):
     rollout_status = run_command(["kubectl", "rollout", "status", "deployment/fastapi-deployment"])
 
     return {"status": "Deployment updated", "rollout_status": rollout_status}
+
+
+#uvicorn webhook:app --host 0.0.0.0 --port 8000 --reload
