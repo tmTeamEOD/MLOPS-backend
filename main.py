@@ -16,17 +16,17 @@ async def favicon():
 
 import subprocess
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 
 app = FastAPI()
 
-class CommandRequest(BaseModel):
-    command: str
-
-@app.post("/run-command/")
-def run_command(request: CommandRequest):
+@app.post("/setup-reverse-ssh/")
+def setup_reverse_ssh(remote_host: str, remote_user: str, remote_port: int = 9000):
+    """
+    FastAPI를 통해 마스터 노드에서 외부 서버로 SSH 터널링 생성
+    """
     try:
-        result = subprocess.run(request.command, shell=True, capture_output=True, text=True, check=True)
-        return {"output": result.stdout, "error": result.stderr}
+        cmd = f"ssh -R {remote_port}:localhost:6443 {remote_user}@{remote_host} -N -f"
+        subprocess.run(cmd, shell=True, check=True)
+        return {"message": f"Reverse SSH 터널 설정 완료. 6443 포트가 {remote_host}:{remote_port}로 우회됨."}
     except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=500, detail=f"Command failed: {e.stderr}")
+        return {"error": str(e)}
