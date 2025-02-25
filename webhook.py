@@ -53,7 +53,7 @@ async def webhook(request: Request):
     # 쿠버네티스 배포 업데이트
     logging.info("Updating Kubernetes deployment...")
     run_command(["kubectl", "set", "image", "deployment/fastapi-deployment",
-                 f"fastapi={image_tag}"])
+                 f"fastapi-container={image_tag}"])
 
     # 롤아웃 진행 확인
     logging.info("Checking rollout status...")
