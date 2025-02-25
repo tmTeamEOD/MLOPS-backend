@@ -14,17 +14,23 @@ async def root():
 async def favicon():
     return FileResponse("static/favicon.ico")  # favicon 파일 제공
 
+from pydantic import BaseModel
 import subprocess
 
+# JSON 요청을 받을 데이터 모델 정의
+class SSHRequest(BaseModel):
+    remote_host: str
+    remote_user: str
+    remote_port: int = 9000  # 기본값 9000
 
 @app.post("/setup-reverse-ssh/")
-def setup_reverse_ssh(remote_host: str, remote_user: str, remote_port: int = 9000):
+def setup_reverse_ssh(request: SSHRequest):
     """
-    FastAPI를 통해 마스터 노드에서 외부 서버로 SSH 터널링 생성
+    FastAPI에서 원격 SSH 터널을 설정하는 API
     """
     try:
-        cmd = f"ssh -R {remote_port}:localhost:6443 {remote_user}@{remote_host} -N -f"
+        cmd = f"ssh -R {request.remote_port}:localhost:6443 {request.remote_user}@{request.remote_host} -N -f"
         subprocess.run(cmd, shell=True, check=True)
-        return {"message": f"Reverse SSH 터널 설정 완료. 6443 포트가 {remote_host}:{remote_port}로 우회됨."}
+        return {"message": f"Reverse SSH 터널 설정 완료. 6443 포트가 {request.remote_host}:{request.remote_port}로 우회됨."}
     except subprocess.CalledProcessError as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=f"SSH 터널링 실패: {str(e)}")
