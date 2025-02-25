@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 
 app = FastAPI()
@@ -15,9 +15,7 @@ async def favicon():
     return FileResponse("static/favicon.ico")  # favicon 파일 제공
 
 import subprocess
-from fastapi import FastAPI, HTTPException
 
-app = FastAPI()
 
 @app.post("/setup-reverse-ssh/")
 def setup_reverse_ssh(remote_host: str, remote_user: str, remote_port: int = 9000):
