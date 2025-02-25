@@ -38,7 +38,7 @@ async def webhook(request: Request):
         return {"status": "Invalid signature"}
 
     # Git Pull 실행
-    repo_path = "/home/skitterbot/MLOPS-backend"
+    repo_path = "/home/k8s/MLOPS-backend"
     logging.info("Running git pull...")
     run_command(["git", "-C", repo_path, "pull"])
     run_command(["bash", "-c", f"echo $GITHUB_PAT | docker login ghcr.io -u tmteameod --password-stdin"])
