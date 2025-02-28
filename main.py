@@ -6,7 +6,7 @@ app = FastAPI()
 @app.get("/")
 async def root():
     return JSONResponse(
-        content={"message": "Test now!"},
+        content={"message": "Test this!"},
         media_type="application/json; charset=utf-8"
     )
 
